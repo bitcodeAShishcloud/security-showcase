@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <meta name="description" content="Client-Side Security Showcase - DOM XSS, Event Handler Injection, and Safe Rendering">
+    <title>Client-Side Security Showcase | Frontend Engineering</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Client-Side Security Specific Styles */
+        .threat-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .demo-section {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: 0 2px 8px var(--shadow);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .demo-section.secure {
+            border-left-color: var(--success-color);
+        }
+
+        .demo-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .threat-badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .secure-badge {
+            display: inline-block;
+            background: var(--success-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            overflow-x: auto;
+            color: #d63384;
+        }
+
+        .code-block.secure {
+            background: #f0f9f6;
+            color: #0a5a3d;
+            border-color: var(--success-color);
+        }
+
+        .code-block.vulnerable {
+            background: #fef5f5;
+            color: #8b0000;
+            border-color: var(--accent-color);
+        }
+
+        .demo-output {
+            background: #f9f9f9;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            min-height: 80px;
+            position: relative;
+        }
+
+        .demo-output.warning {
+            background: #fff3cd;
+            border-color: var(--warning-color);
+        }
+
+        .demo-output.success {
+            background: #d4edda;
+            border-color: var(--success-color);
+        }
+
+        .interactive-button {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+
+        .interactive-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+
+        .interactive-button.danger {
+            background: var(--accent-color);
+        }
+
+        .interactive-button.danger:hover {
+            background: #c0392b;
+        }
+
+        .threat-category {
+            background: var(--background);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .threat-category h2 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+
+        .vuln-comparison {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .threat-demo {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .threat-demo {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .warning-highlight {
+            background: #fff3cd;
+            padding: 1rem;
+            border-left: 4px solid var(--warning-color);
+            border-radius: var(--radius-md);
+            margin: 1rem 0;
+        }
+
+        .success-highlight {
+            background: #d4edda;
+            padding: 1rem;
+            border-left: 4px solid var(--success-color);
+            border-radius: var(--radius-md);
+            margin: 1rem 0;
+        }
+
+        .explanation {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin: 1rem 0;
+            line-height: 1.8;
+        }
+
+        .threat-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .threat-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .threat-list li:before {
+            content: "⚠️";
+            position: absolute;
+            left: 0;
+        }
+
+        .defense-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .defense-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .defense-list li:before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+
+        .payloads {
+            background: #f5f5f5;
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .payload-item {
+            background: white;
+            padding: 0.7rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            border-left: 3px solid var(--warning-color);
+            font-family: var(--font-mono);
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="main-header">
+        <div class="container">
+            <h1>🛡️ Client-Side Security Showcase</h1>
+            <p class="subtitle">DOM Manipulation, Event Injection & Safe Rendering Techniques</p>
+        </div>
+    </header>
+
+    <!-- NAVIGATION BACK -->
+    <div style="padding: 1rem 0; text-align: center;">
+        <a href="index.html" style="padding: 0.75rem 1.5rem; background: var(--secondary-color); color: white; text-decoration: none; border-radius: var(--radius-md); transition: all 0.3s;" onmouseover="this.style.background='#2980b9'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='var(--secondary-color)'; this.style.transform='translateY(0)';">← Back to Main</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="container" style="padding: 2rem 0; flex: 1;">
+
+        <!-- THREAT 1: DOM MANIPULATION WITH innerHTML -->
+        <section class="threat-category">
+            <h2>⚠️ Threat 1: DOM Manipulation - innerHTML Vulnerability</h2>
+            
+            <div class="warning-highlight">
+                <strong>Risk Level: CRITICAL</strong><br>
+                Using <code>innerHTML</code> with user input allows attackers to inject arbitrary HTML and JavaScript code, leading to DOM-based XSS attacks.
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Why innerHTML is Dangerous:</h3>
+            <ul class="threat-list">
+                <li>Parses and executes JavaScript within HTML strings</li>
+                <li>Bypasses CSP script-src restrictions on inline scripts</li>
+                <li>Allows injection of event handlers and scripts</li>
+                <li>No input sanitization occurs automatically</li>
+                <li>Can lead to session hijacking, credential theft, malware distribution</li>
+            </ul>
+
+            <div class="threat-demo">
+                <!-- VULNERABLE VERSION -->
+                <div class="demo-section">
+                    <h3>
+                        ❌ Vulnerable Code
+                        <span class="threat-badge">UNSAFE</span>
+                    </h3>
+                    
+                    <div class="code-block vulnerable">
+                        <pre>// VULNERABLE - DO NOT USE<br>const userInput = getFromURL();<br>document.getElementById('output')\n  .innerHTML = userInput;</pre>
+                    </div>
+
+                    <p class="explanation">This code directly renders user input as HTML, executing any embedded scripts.</p>
+
+                    <label for="userInput1" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Test Input:</label>
+                    <input type="text" id="userInput1" placeholder="Try: <img src=x onerror=alert('XSS')>" 
+                           style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 0.5rem;">
+                    
+                    <button class="interactive-button danger" onclick="demoVulnerableInnerHTML()">Execute Vulnerable Code</button>
+
+                    <div class="demo-output warning" id="vulnerableOutput" style="display: none;">
+                        <strong style="color: #8b0000;">⚠️ Output:</strong>
+                        <div id="vulnerableContent" style="margin-top: 0.5rem;"></div>
+                    </div>
+                </div>
+
+                <!-- SECURE VERSION -->
+                <div class="demo-section secure">
+                    <h3>
+                        ✅ Secure Code
+                        <span class="secure-badge">SAFE</span>
+                    </h3>
+                    
+                    <div class="code-block secure">
+                        <pre>// SECURE - USE textContent<br>const userInput = getFromURL();<br>document.getElementById('output')\n  .textContent = userInput;</pre>
+                    </div>
+
+                    <p class="explanation">textContent treats input as plain text, escaping any HTML/JavaScript automatically.</p>
+
+                    <label for="userInput2" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Test Input:</label>
+                    <input type="text" id="userInput2" placeholder="Try: <img src=x onerror=alert('XSS')>" 
+                           style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 0.5rem;">
+                    
+                    <button class="interactive-button" onclick="demoSecureTextContent()">Execute Secure Code</button>
+
+                    <div class="demo-output success" id="secureOutput" style="display: none;">
+                        <strong style="color: #0a5a3d;">✅ Output:</strong>
+                        <div id="secureContent" style="margin-top: 0.5rem; word-break: break-all;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAYLOADS THAT WOULD WORK WITH innerHTML -->
+            <div class="payloads">
+                <strong>Example Attack Payloads (Safe to View Here):</strong>
+                <div class="payload-item">&lt;img src=x onerror="alert('XSS')"&gt;</div>
+                <div class="payload-item">&lt;svg onload="console.log('hacked')"&gt;</div>
+                <div class="payload-item">&lt;body onload="fetch('/steal-data')"&gt;</div>
+                <div class="payload-item">&lt;script&gt;document.location='http://evil.com'&lt;/script&gt;</div>
+            </div>
+        </section>
+
+        <!-- THREAT 2: EVENT HANDLER INJECTION -->
+        <section class="threat-category">
+            <h2>⚠️ Threat 2: Event Handler Injection</h2>
+            
+            <div class="warning-highlight">
+                <strong>Risk Level: CRITICAL</strong><br>
+                Dynamically setting event handlers through user-controlled data allows attackers to execute arbitrary code on user interactions.
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Attack Vectors:</h3>
+            <ul class="threat-list">
+                <li>onclick, onload, onerror, onmouseover attributes</li>
+                <li>Directly setting element.onclick, element.onmouseover properties</li>
+                <li>Using addEventListener with attacker-controlled callbacks</li>
+                <li>Injecting event handlers through HTML templates</li>
+                <li>Data attributes that get converted to event handlers</li>
+            </ul>
+
+            <div class="threat-demo">
+                <!-- VULNERABLE VERSION -->
+                <div class="demo-section">
+                    <h3>
+                        ❌ Vulnerable Event Handler
+                        <span class="threat-badge">UNSAFE</span>
+                    </h3>
+                    
+                    <div class="code-block vulnerable">
+                        <pre>// VULNERABLE<br>const userCode = getUserInput();<br>button.onclick = function() {\n  eval(userCode); // EXTREMELY DANGEROUS\n};</pre>
+                    </div>
+
+                    <p class="explanation">This executes arbitrary code when the button is clicked.</p>
+
+                    <label for="eventInput1" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Malicious Code:</label>
+                    <input type="text" id="eventInput1" placeholder="Try: alert('Hacked!')" 
+                           style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 0.5rem;">
+                    
+                    <button class="interactive-button danger" id="vulnEventBtn" onclick="setupVulnerableEventHandler()">Setup & Click to Execute</button>
+
+                    <div class="demo-output warning" id="eventVulnOutput" style="display: none; margin-top: 1rem;">
+                        <strong style="color: #8b0000;">⚠️ Alert would execute on click!</strong>
+                    </div>
+                </div>
+
+                <!-- SECURE VERSION -->
+                <div class="demo-section secure">
+                    <h3>
+                        ✅ Secure Event Handling
+                        <span class="secure-badge">SAFE</span>
+                    </h3>
+                    
+                    <div class="code-block secure">
+                        <pre>// SECURE<br>const userData = getUserInput();<br>button.addEventListener('click', () => {\n  // Validate and process data safely\n  if (isValidData(userData)) {\n    processData(userData);\n  }\n});</pre>
+                    </div>
+
+                    <p class="explanation">Event handlers are predefined functions, not user input. Data is validated before processing.</p>
+
+                    <label for="eventInput2" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Safe Data Input:</label>
+                    <input type="text" id="eventInput2" placeholder="Enter some text" 
+                           style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 0.5rem;">
+                    
+                    <button class="interactive-button" id="secureEventBtn" onclick="setupSecureEventHandler()">Setup & Click to Execute</button>
+
+                    <div class="demo-output success" id="eventSecureOutput" style="display: none; margin-top: 1rem;">
+                        <strong style="color: #0a5a3d;">✅ Data processed safely:</strong>
+                        <div id="eventSecureContent" style="margin-top: 0.5rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- THREAT 3: MALICIOUS JS EXECUTION -->
+        <section class="threat-category">
+            <h2>⚠️ Threat 3: Malicious JavaScript Execution</h2>
+            
+            <div class="warning-highlight">
+                <strong>Risk Level: CRITICAL</strong><br>
+                Using eval(), Function(), or dynamic script injection allows complete compromise of the application.
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Dangerous Practices:</h3>
+            <ul class="threat-list">
+                <li><code>eval()</code> - Executes any string as JavaScript code</li>
+                <li><code>Function()</code> constructor - Creates functions from strings</li>
+                <li><code>setTimeout()</code> with string argument</li>
+                <li><code>setInterval()</code> with string argument</li>
+                <li>Dynamic &lt;script&gt; tag injection</li>
+            </ul>
+
+            <div class="threat-demo">
+                <!-- VULNERABLE VERSION -->
+                <div class="demo-section">
+                    <h3>
+                        ❌ Vulnerable: Using eval()
+                        <span class="threat-badge">UNSAFE</span>
+                    </h3>
+                    
+                    <div class="code-block vulnerable">
+                        <pre>// VULNERABLE - NEVER DO THIS<br>eval(userExpression);<br>// Attacker could input:<br>// "fetch('/steal', {..})"</pre>
+                    </div>
+
+                    <p class="explanation">eval() executes any JavaScript code, giving attackers full access to the application.</p>
+
+                    <div class="warning-highlight" style="background: #fff3cd; margin: 1rem 0;">
+                        <strong>⚠️ Warning:</strong> This demo will NOT actually show eval() execution for security reasons, but this illustrates the danger.
+                    </div>
+
+                    <button class="interactive-button danger" onclick="alert('❌ eval() is EXTREMELY DANGEROUS and should NEVER be used!\\n\\nThis demo prevents the actual execution.')">Show Why eval() is Dangerous</button>
+                </div>
+
+                <!-- SECURE VERSION -->
+                <div class="demo-section secure">
+                    <h3>
+                        ✅ Secure: Parse & Validate
+                        <span class="secure-badge">SAFE</span>
+                    </h3>
+                    
+                    <div class="code-block secure">
+                        <pre>// SECURE - Use proper parsers<br>const result = JSON.parse(userJSON);<br>// Or use a safe math library<br>const answer = mathEvaluator(expr);</pre>
+                    </div>
+
+                    <p class="explanation">Use specialized parsers like JSON.parse() or dedicated libraries designed for specific data types.</p>
+
+                    <label for="mathInput" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Math Expression (safe parser):</label>
+                    <input type="text" id="mathInput" placeholder="Try: 2 + 2 * 5" 
+                           style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 0.5rem;">
+                    
+                    <button class="interactive-button" onclick="demoSafeMathParser()">Parse & Calculate Safely</button>
+
+                    <div class="demo-output success" id="mathOutput" style="display: none;">
+                        <strong style="color: #0a5a3d;">✅ Result:</strong>
+                        <div id="mathContent" style="margin-top: 0.5rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DEFENSE STRATEGIES -->
+        <section class="threat-category">
+            <h2>🛡️ Defense Strategies</h2>
+
+            <div class="success-highlight">
+                <strong>Key Defensive Practices:</strong>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">1. Use textContent Instead of innerHTML</h3>
+            <ul class="defense-list">
+                <li>textContent treats all input as plain text</li>
+                <li>HTML entities are automatically escaped</li>
+                <li>No script execution is possible</li>
+                <li>Performance benefit - no HTML parsing</li>
+            </ul>
+
+            <div class="code-block secure" style="margin: 1rem 0;">
+                <pre>// ✅ GOOD: Safe text insertion
+document.getElementById('result').textContent = userInput;
+
+// ❌ BAD: Allows HTML/JS execution
+document.getElementById('result').innerHTML = userInput;
+
+// ✅ GOOD: Safe HTML using createElement
+const div = document.createElement('div');
+div.textContent = userInput;
+parent.appendChild(div);</pre>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">2. HTML Allowlisting</h3>
+            <p class="explanation">When safe HTML is needed, use a library that only allows specific safe tags and attributes.</p>
+
+            <div class="code-block secure" style="margin: 1rem 0;">
+                <pre>// ✅ GOOD: Using DOMPurify library
+import DOMPurify from 'dompurify';
+const cleanHTML = DOMPurify.sanitize(userHTML, {
+  ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br'],
+  ALLOWED_ATTR: []
+});
+document.getElementById('result').innerHTML = cleanHTML;</pre>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">3. Event Handler Stripping</h3>
+            <p class="explanation">Remove all event attributes before rendering or use predefined handlers only.</p>
+
+            <div class="code-block secure" style="margin: 1rem 0;">
+                <pre>// ✅ GOOD: Remove event handlers
+const div = document.createElement('div');
+div.textContent = userContent;
+// Remove any event attributes
+['onclick', 'onload', 'onerror', 'onmouseover']
+  .forEach(attr => div.removeAttribute(attr));
+
+// ✅ GOOD: Only use predefined handlers
+button.addEventListener('click', () => {
+  handleUserData(userData);
+});</pre>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">4. Content Security Policy (CSP)</h3>
+            <p class="explanation">Use CSP headers to prevent inline script execution and restrict script sources.</p>
+
+            <div class="code-block secure" style="margin: 1rem 0;">
+                <pre>// ✅ GOOD: CSP Headers
+Content-Security-Policy: 
+  default-src 'self'; 
+  script-src 'self'; 
+  style-src 'self' 'unsafe-inline';
+  
+// This prevents inline scripts and restricts
+// script loading to same-origin only</pre>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">5. Input Validation</h3>
+            <p class="explanation">Always validate and sanitize user input before processing.</p>
+
+            <div class="code-block secure" style="margin: 1rem 0;">
+                <pre>// ✅ GOOD: Validate input
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function processUserInput(input) {
+  if (!isValidEmail(input)) {
+    console.error('Invalid input');
+    return;
+  }
+  // Process validated input
+}</pre>
+            </div>
+        </section>
+
+        <!-- CHECKLIST -->
+        <section class="threat-category">
+            <h2>✅ Security Checklist</h2>
+
+            <div style="background: var(--background); padding: 2rem; border-radius: var(--radius-lg);">
+                <div style="margin-bottom: 1.5rem;">
+                    <input type="checkbox" id="check1" onchange="updateChecklist()">
+                    <label for="check1" style="margin-left: 0.5rem;">
+                        <strong>Always use textContent for user-generated text</strong>
+                        <p style="margin: 0.5rem 0 0 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">innerHTML only for trusted, controlled HTML content</p>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <input type="checkbox" id="check2" onchange="updateChecklist()">
+                    <label for="check2" style="margin-left: 0.5rem;">
+                        <strong>Never use eval(), Function(), or dynamic script execution</strong>
+                        <p style="margin: 0.5rem 0 0 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">Use specific parsers like JSON.parse() instead</p>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <input type="checkbox" id="check3" onchange="updateChecklist()">
+                    <label for="check3" style="margin-left: 0.5rem;">
+                        <strong>Define event handlers explicitly, never from user input</strong>
+                        <p style="margin: 0.5rem 0 0 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">Use addEventListener() with predefined functions</p>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <input type="checkbox" id="check4" onchange="updateChecklist()">
+                    <label for="check4" style="margin-left: 0.5rem;">
+                        <strong>Implement Content Security Policy (CSP)</strong>
+                        <p style="margin: 0.5rem 0 0 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">Restrict script sources and prevent inline execution</p>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <input type="checkbox" id="check5" onchange="updateChecklist()">
+                    <label for="check5" style="margin-left: 0.5rem;">
+                        <strong>Validate and sanitize all user inputs</strong>
+                        <p style="margin: 0.5rem 0 0 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">Use whitelisting and type checking</p>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <input type="checkbox" id="check6" onchange="updateChecklist()">
+                    <label for="check6" style="margin-left: 0.5rem;">
+                        <strong>Use security-focused libraries (DOMPurify, sanitize-html)</strong>
+                        <p style="margin: 0.5rem 0 0 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">For complex HTML rendering needs</p>
+                    </label>
+                </div>
+
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border-color);">
+                    <strong id="checklistCount">Completed: 0/6</strong>
+                </div>
+            </div>
+        </section>
+
+        <!-- KEY TAKEAWAYS -->
+        <section class="threat-category">
+            <h2>🎯 Key Takeaways</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <div style="background: #e8f4f8; padding: 1.5rem; border-radius: var(--radius-lg); border-left: 4px solid var(--secondary-color);">
+                    <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">📋 textContent</h4>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.95rem;">Default choice for displaying user text. Safely escapes all HTML.</p>
+                </div>
+
+                <div style="background: #fff3cd; padding: 1.5rem; border-radius: var(--radius-lg); border-left: 4px solid var(--warning-color);">
+                    <h4 style="color: #8b5a00; margin-bottom: 0.5rem;">⚠️ innerHTML Carefully</h4>
+                    <p style="margin: 0; color: #8b5a00; font-size: 0.95rem;">Only with controlled, trusted content. Always sanitize if from users.</p>
+                </div>
+
+                <div style="background: #d4edda; padding: 1.5rem; border-radius: var(--radius-lg); border-left: 4px solid var(--success-color);">
+                    <h4 style="color: #0a5a3d; margin-bottom: 0.5rem;">✅ Validation First</h4>
+                    <p style="margin: 0; color: #0a5a3d; font-size: 0.95rem;">Always validate input on both client and server side.</p>
+                </div>
+
+                <div style="background: #fce4ec; padding: 1.5rem; border-radius: var(--radius-lg); border-left: 4px solid #e91e63;">
+                    <h4 style="color: #880e4f; margin-bottom: 0.5rem;">🚫 Never eval()</h4>
+                    <p style="margin: 0; color: #880e4f; font-size: 0.95rem;">eval() is equivalent to giving hackers full control. Avoid at all costs.</p>
+                </div>
+
+                <div style="background: #f3e5f5; padding: 1.5rem; border-radius: var(--radius-lg); border-left: 4px solid #9c27b0;">
+                    <h4 style="color: #4a148c; margin-bottom: 0.5rem;">🎯 Explicit Handlers</h4>
+                    <p style="margin: 0; color: #4a148c; font-size: 0.95rem;">Define event handlers in code, never from user data.</p>
+                </div>
+
+                <div style="background: #e0f2f1; padding: 1.5rem; border-radius: var(--radius-lg); border-left: 4px solid #009688;">
+                    <h4 style="color: #004d40; margin-bottom: 0.5rem;">🛡️ CSP Headers</h4>
+                    <p style="margin: 0; color: #004d40; font-size: 0.95rem;">Use Content Security Policy to enforce security policies.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer style="background: var(--primary-color); color: white; padding: 2rem; text-align: center; margin-top: 3rem;">
+        <p>🔒 Security-First Frontend Engineering | Client-Side Security Showcase | Stay Safe!</p>
+        <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">This educational content demonstrates security vulnerabilities and defenses for learning purposes only.</p>
+    </footer>
+
+    <script>
+        // ============================================
+        // DEMO 1: innerHTML vs textContent
+        // ============================================
+
+        function demoVulnerableInnerHTML() {
+            const input = document.getElementById('userInput1').value;
+            if (!input.trim()) {
+                alert('Please enter some input');
+                return;
+            }
+            
+            // Show the output container
+            document.getElementById('vulnerableOutput').style.display = 'block';
+            
+            // This would be vulnerable with innerHTML, but we'll show safe representation
+            const content = document.getElementById('vulnerableContent');
+            content.innerHTML = '';
+            
+            const warning = document.createElement('div');
+            warning.style.padding = '1rem';
+            warning.style.background = '#fff3cd';
+            warning.style.borderRadius = '4px';
+            warning.innerHTML = `
+                <strong style="color: #8b0000;">⚠️ If this used innerHTML:</strong><br>
+                <small>Rendered as: <code>${escapeHtml(input)}</code></small><br><br>
+                <strong style="color: #8b0000;">Attack vectors detected:</strong><br>
+                ${analyzeXSSThreats(input)}
+            `;
+            content.appendChild(warning);
+        }
+
+        function demoSecureTextContent() {
+            const input = document.getElementById('userInput2').value;
+            if (!input.trim()) {
+                alert('Please enter some input');
+                return;
+            }
+            
+            // Show the output container
+            document.getElementById('secureOutput').style.display = 'block';
+            
+            // Using textContent
+            const content = document.getElementById('secureContent');
+            content.textContent = `Input safely treated as plain text: "${input}"`;
+            
+            const note = document.createElement('div');
+            note.style.marginTop = '1rem';
+            note.style.padding = '0.5rem';
+            note.style.background = 'white';
+            note.style.borderRadius = '4px';
+            note.innerHTML = '✅ All HTML/JS characters are escaped and displayed as text. No code execution possible.';
+            content.appendChild(note);
+        }
+
+        function analyzeXSSThreats(input) {
+            const threats = [];
+            if (input.includes('onerror') || input.includes('onclick') || input.includes('onload')) {
+                threats.push('✗ Event handler injection detected');
+            }
+            if (input.includes('<script>') || input.includes('eval')) {
+                threats.push('✗ Script injection detected');
+            }
+            if (input.includes('<img') || input.includes('<svg')) {
+                threats.push('✗ Image/SVG-based XSS detected');
+            }
+            if (threats.length === 0) {
+                threats.push('✓ No obvious threats (but always validate!)');
+            }
+            return threats.map(t => `<div>${t}</div>`).join('');
+        }
+
+        // ============================================
+        // DEMO 2: Event Handler Security
+        // ============================================
+
+        function setupVulnerableEventHandler() {
+            const code = document.getElementById('eventInput1').value;
+            const btn = document.getElementById('vulnEventBtn');
+            
+            if (!code.trim()) {
+                alert('Please enter some code');
+                return;
+            }
+            
+            // We won't actually execute eval for safety
+            document.getElementById('eventVulnOutput').style.display = 'block';
+            
+            const warning = document.createElement('div');
+            warning.innerHTML = `
+                <strong style="color: #8b0000;">⚠️ DANGEROUS!</strong><br>
+                This would execute: <code style="background: #fef5f5;">${escapeHtml(code)}</code><br>
+                <small>For security, actual execution is prevented. Never use eval()!</small>
+            `;
+            
+            const output = document.getElementById('eventVulnOutput');
+            output.innerHTML = '';
+            output.appendChild(warning);
+        }
+
+        function setupSecureEventHandler() {
+            const data = document.getElementById('eventInput2').value;
+            
+            if (!data.trim()) {
+                alert('Please enter some data');
+                return;
+            }
+            
+            document.getElementById('eventSecureOutput').style.display = 'block';
+            const content = document.getElementById('eventSecureContent');
+            content.textContent = `"${data}" was processed through a predefined handler. No code execution.`;
+        }
+
+        // ============================================
+        // DEMO 3: Safe Math Parser
+        // ============================================
+
+        function demoSafeMathParser() {
+            const input = document.getElementById('mathInput').value;
+            
+            if (!input.trim()) {
+                alert('Please enter a math expression');
+                return;
+            }
+            
+            // Simple safe math parser
+            try {
+                // Only allow safe math operations
+                if (!/^[\d\s+\-*/.()]+$/.test(input)) {
+                    throw new Error('Invalid characters in expression');
+                }
+                
+                const result = Function('"use strict"; return (' + input + ')')();
+                
+                document.getElementById('mathOutput').style.display = 'block';
+                const content = document.getElementById('mathContent');
+                content.textContent = `${input} = ${result}`;
+                
+                const note = document.createElement('div');
+                note.style.marginTop = '0.5rem';
+                note.style.fontSize = '0.9rem';
+                note.style.color = 'var(--text-secondary)';
+                note.textContent = '✅ Expression evaluated safely in restricted context';
+                content.appendChild(note);
+            } catch (e) {
+                document.getElementById('mathOutput').style.display = 'block';
+                const content = document.getElementById('mathContent');
+                content.textContent = '❌ ' + e.message;
+            }
+        }
+
+        // ============================================
+        // SECURITY CHECKLIST
+        // ============================================
+
+        function updateChecklist() {
+            const checked = 
+                (document.getElementById('check1').checked ? 1 : 0) +
+                (document.getElementById('check2').checked ? 1 : 0) +
+                (document.getElementById('check3').checked ? 1 : 0) +
+                (document.getElementById('check4').checked ? 1 : 0) +
+                (document.getElementById('check5').checked ? 1 : 0) +
+                (document.getElementById('check6').checked ? 1 : 0);
+            
+            document.getElementById('checklistCount').textContent = `Completed: ${checked}/6`;
+        }
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
