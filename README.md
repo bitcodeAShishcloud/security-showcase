@@ -7,7 +7,7 @@
 
 A **security-first frontend engineering showcase** demonstrating real-world DOM-based XSS prevention techniques. Built with vanilla HTML, CSS, and JavaScript - no frameworks, no backend, production-ready.
 
-[🚀 Live Demo](#) | [📚 Documentation](PROJECT_DOCUMENTATION.md)
+[🚀 Live Demo](https://bitcodeashishcloud.github.io/security-showcase/) | [📚 Documentation](PROJECT_DOCUMENTATION.md)
 
 ---
 
