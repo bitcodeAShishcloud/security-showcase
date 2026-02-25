@@ -68,6 +68,40 @@ This is a **security-first frontend engineering showcase** that demonstrates rea
 ✓ Character count and input validation
 ```
 
+### 5. Client-Side Security Showcase (NEW)
+```
+✓ DOM Manipulation Vulnerability Demonstration
+  - innerHTML vs textContent comparison
+  - Live payload testing and execution prevention
+  - XSS threat analysis in real-time
+
+✓ Event Handler Injection Protection
+  - Vulnerable event binding patterns
+  - Safe event handler setup with addEventListener
+  - eval() dangers and safe alternatives
+
+✓ Malicious JavaScript Execution Defense
+  - eval() risks and prevention
+  - Function() constructor dangers
+  - Safe data parsing with JSON.parse()
+  - Protected math expression evaluation
+
+✓ HTML Allowlisting Techniques
+  - DOMPurify library integration examples
+  - Safe tag whitelisting approach
+  - Attribute filtering for user-generated HTML
+
+✓ Event Handler Stripping
+  - onclick, onload, onerror removal
+  - Predefined handler pattern
+  - Attribute sanitization methods
+
+✓ Security Checklist & Validation
+  - 6-point security verification checklist
+  - Real-time security implementation tracking
+  - Best practices reference guide
+```
+
 ---
 
 ## 📝 **Resume Bullet Points**
@@ -157,6 +191,12 @@ In my showcase, I block XSS payloads client-side for immediate UX. But in produc
 | SVG Attack | `<svg/onload=alert(1)>` | Event handler blocking + tag filtering |
 | Iframe Injection | `<iframe src="javascript:alert(1)">` | Dangerous tag removal + CSP |
 | Attribute Injection | `"><script>alert(1)</script>` | Context-aware escaping + sanitization |
+| innerHTML Abuse | `innerHTML = userInput` | Use textContent instead |
+| Event Binding | `onclick = getUserCode()` | Use addEventListener with predefined functions |
+| eval() Execution | `eval(userExpression)` | Use safe parsers (JSON.parse, dedicated libraries) |
+| Function Constructor | `new Function(userCode)()` | Avoid dynamic code generation |
+| setTimeout String | `setTimeout(userCode, 1000)` | Pass function reference, not string |
+| DOM-based XSS | User input → DOM manipulation → Execution | Multi-layered defense: sanitize → validate → render safely |
 
 ### Defense Strategy:
 
@@ -175,6 +215,125 @@ User Input
     ↓
 Safely Displayed Content
 ```
+
+---
+
+## 🎓 **Client-Side Security Showcase Page** (NEW)
+
+### Overview
+A dedicated educational module demonstrating three critical DOM-based vulnerabilities and their defenses through interactive demonstrations and side-by-side code comparisons.
+
+### Features
+
+#### **Threat 1: DOM Manipulation with innerHTML**
+- **Vulnerability**: innerHTML parses and executes embedded JavaScript
+- **Attack Vector Example**: `<img src=x onerror="alert('XSS')">`
+- **Interactive Demo**: 
+  - Vulnerable code panel showing innerHTML usage
+  - Secure code panel showing textContent alternative
+  - Live input testing to see attack handling
+  - Real-time XSS threat analysis
+  - Example payloads that would execute
+
+#### **Threat 2: Event Handler Injection**
+- **Vulnerability**: Dynamic event handlers from user input execute arbitrary code
+- **Attack Vector Example**: `button.onclick = eval(userCode)`
+- **Interactive Demo**:
+  - Vulnerable: Shows eval() execution risks
+  - Secure: addEventListener with predefined handlers
+  - Input validation and safe data processing
+  - Real-time demonstration of data flow
+
+#### **Threat 3: Malicious JavaScript Execution**
+- **Vulnerability**: eval(), Function(), setTimeout() with strings execute code
+- **Attack Pattern Examples**:
+  - `eval(userExpression)` - Direct execution
+  - `new Function(userCode)()` - Function constructor
+  - `setTimeout(userCode, 1000)` - Delayed execution
+- **Interactive Demo**:
+  - Why eval() is critically dangerous
+  - Safe alternatives using specific parsers
+  - JSON.parse() for structured data
+  - Safe math expression evaluation
+
+### Defense Strategies Documented
+
+**1. Use textContent Instead of innerHTML**
+```javascript
+✓ textContent treats input as plain text
+✓ HTML entities automatically escaped
+✓ No script execution possible
+✓ Performance benefit - no HTML parsing
+```
+
+**2. HTML Allowlisting**
+```javascript
+✓ DOMPurify library integration
+✓ Restrict to specific safe tags
+✓ Validate attributes strictly
+✓ Escape all user-controlled content
+```
+
+**3. Event Handler Stripping**
+```javascript
+✓ Remove onclick, onload, onerror attributes
+✓ Predefined event handler functions
+✓ Only addEventListener with safe callbacks
+✓ No attribute-based event binding
+```
+
+**4. Content Security Policy (CSP)**
+```http
+✓ Prevent inline script execution
+✓ Restrict script to 'self' only
+✓ Block eval() at browser level
+```
+
+**5. Input Validation**
+```javascript
+✓ Type checking
+✓ Length limitations
+✓ Whitelist allowed characters
+✓ Pattern matching for expected formats
+```
+
+### Interactive Components
+
+- **Side-by-Side Code Comparison**: Vulnerable vs. Secure implementations
+- **Live Test Input Fields**: Test custom payloads safely
+- **Real-Time Output Display**: See exactly how each approach handles the input
+- **Security Checklist**: 6-point verification system
+- **Key Takeaways Cards**: Visual summary of best practices
+
+### Security Principles Demonstrated
+
+| Principle | Implementation |
+|-----------|----------------|
+| **Defense in Depth** | Multiple layers: sanitize → validate → render safely |
+| **Principle of Least Privilege** | Only predefined, explicit event handlers |
+| **Secure by Design** | Security considerations built into UI/UX |
+| **Trust No Input** | All user input treated as potentially malicious |
+| **Context Awareness** | Different rendering for user vs. system content |
+| **Fail Secure** | Errors result in safe defaults, not execution |
+
+### Educational Value
+
+**For Beginners:**
+- Clear explanation of what DOM manipulation vulnerabilities are
+- Visual demonstration of attack vs. defense
+- Simple, understandable code examples
+
+**For Developers:**
+- Production-ready security patterns
+- OWASP-aligned best practices
+- CSP, sanitization, and safe rendering strategies
+- Real-world attack vector examples
+
+**For Security Professionals:**
+- Comprehensive threat model documentation
+- Multi-layered defense analysis
+- Attack surface mapping
+- Mitigation effectiveness demonstration
 
 ---
 
@@ -206,46 +365,171 @@ Following security best practice: **Defense in Depth**
 
 ---
 
-## 🚀 **How to Demo This Project**
+## 🌐 **Project Pages & Features**
+
+### 1. **Main Dashboard** (index.html)
+**Purpose**: Portfolio showcase and entry point
+**Features**:
+- Professional header with security focus
+- Navigation menu with:
+  - Font size controls (accessibility)
+  - Portfolio links
+  - Security tools shortcuts
+- Project overview section
+- Live security demo (chatbot XSS prevention)
+- Complete security threat model documentation
+- Responsive design with mobile optimization
+
+### 2. **Client-Side Security Showcase** (client-side-security.html) - NEW
+**Purpose**: Educational module on DOM-based vulnerabilities
+**Features**:
+- Three major threat demonstrations:
+  1. iframe Manipulation with innerHTML
+  2. Event Handler Injection
+  3. Malicious JavaScript Execution
+- Interactive side-by-side code comparisons
+- Live payload testing
+- Defense strategy explanations
+- Security checklist (6-point verification)
+- Key takeaways and best practices
+- Visual threat analysis
+
+**Educational Focus**:
+- Explains why each vulnerability is dangerous
+- Shows practical attack payloads
+- Demonstrates secure alternatives
+- Provides production-ready patterns
+
+### 3. **Chatbot Security Defense** (chatbot-security.html)
+**Purpose**: Interactive XSS prevention demonstration
+**Features**:
+- Real-time chat interface
+- Six common XSS attack examples
+- Live sanitization demonstration
+- Security alert system
+- Input validation and character counting
+- Comprehensive threat documentation
+
+### 4. **Project Documentation** (PROJECT_DOCUMENTATION.md)
+**Purpose**: Comprehensive reference guide
+**Features**:
+- Technical skill showcase
+- Security knowledge reference
+- Implementation details
+- Resume bullet points (3 versions)
+- Interview Q&A with detailed answers
+- Attack vector documentation
+- Defense strategy diagrams
+
+---
+
+## 🎯 **Using This Project**
 
 ### For Recruiters (2-Minute Demo):
 1. **Show the live site** - Emphasize professional design
 2. **Click an XSS payload button** - Show real-time blocking
-3. **Open DevTools Console** - Show CSP violation logging
-4. **Point to inline comments** - Demonstrate documentation skills
-5. **Explain the threat model section** - Show security thinking
+3. **Navigate to Client-Side Security page** - Demonstrate comprehensive threat documentation
+4. **Show side-by-side code comparison** - Vulnerable vs secure implementations
+5. **Open DevTools Console** - Show CSP violation logging
+6. **Point to inline comments** - Demonstrate documentation skills
+7. **Explain the threat model** - Show security thinking across multiple attack vectors
 
-### For Technical Interviews (10-Minute Deeper Dive):
+### For Technical Interviews (20-Minute Deeper Dive):
+
+**Part 1: Main Dashboard** (8 min)
 1. **Explain the threat**: What is DOM-based XSS and why it matters
 2. **Walk through sanitization**: Show the `sanitizeInput()` function
-3. **Compare textContent vs innerHTML**: Demonstrate the vulnerability
-4. **Show the CSP header**: Explain browser-level enforcement
-5. **Discuss production considerations**: Server-side validation, rate limiting, monitoring
+3. **Show the CSP header**: Explain browser-level enforcement
+4. **Demonstrate real blocking**: Test with actual XSS payloads
+
+**Part 2: Client-Side Security Showcase** (12 min)
+1. **Threat #1 - innerHTML Danger**:
+   - Show why innerHTML parses user input as HTML
+   - Demonstrate with interactive test
+   - Explain textContent alternative
+
+2. **Threat #2 - Event Handler Injection**:
+   - Describe eval() risks
+   - Show safe event handling with addEventListener
+   - Explain why explicit handlers only
+
+3. **Threat #3 - JavaScript Execution**:
+   - Explain Function/setTimeout dangers
+   - Show safe parsing alternatives
+   - Discuss CSP prevention
+
+4. **Defense Strategy**:
+   - Multi-layered approach
+   - Production considerations
+   - Server-side correlation
 
 ### For Security-Focused Roles:
-1. **Attack surface analysis**: Discuss all entry points
-2. **Threat modeling**: Explain the documented threat model
-3. **Defense in depth**: Show multiple protective layers
-4. **Secure coding practices**: Point to addEventListener vs onclick
-5. **Production hardening**: Discuss HTTPS, HSTS, SRI, rate limiting
+
+**Level 1: Foundation Security** (15 min)
+1. **Main Site Overview**:
+   - Sanitization pipeline explanation
+   - Safe rendering strategy
+   - CSP header configuration
+
+2. **Client-Side Security Threats**:
+   - DOM manipulation risks
+   - Event handler vulnerabilities
+   - Code execution dangers
+
+**Level 2: Intermediate Analysis** (30 min)
+1. **Complete Threat Model Analysis**:
+   - All 12 documented attack vectors
+   - Defense mechanisms for each
+   - CSP violation scenarios
+
+2. **Code Walkthrough**:
+   - Sanitization function logic
+   - Safe rendering implementation
+   - Event handler patterns
+   - CSP integration
+
+3. **Scenario Discussion**:
+   - "What if sanitization has a bug?"
+   - "Can CSP alone prevent XSS?"
+   - "Why do we need multiple layers?"
+
+**Level 3: Advanced Assessment** (45+ min)
+1. **Attack Surface Analysis**:
+   - Identify all input vectors
+   - Map potential bypasses
+   - Discuss edge cases and evasion
+
+2. **Defense Mechanisms Evaluation**:
+   - Performance implications
+   - Compatibility considerations  
+   - Maintenance overhead
+   - Monitoring strategy
+
+3. **Production Hardening**:
+   - Server-side validation necessity
+   - Rate limiting and DDoS protection
+   - Security event monitoring
+   - Incident response procedures
 
 ---
 
 ## 💼 **Career Value**
 
 ### This Project Shows You Can:
-- ✅ Think like a security engineer (threat modeling)
-- ✅ Implement OWASP best practices (not just theory)
-- ✅ Write production-quality code (clean, documented, tested)
-- ✅ Explain complex concepts clearly (inline comments + documentation)
-- ✅ Balance security with usability (professional UI)
+- ✅ Think like a security engineer (threat modeling across multiple attack vectors)
+- ✅ Implement OWASP best practices (not just theory, with interactive demonstrations)
+- ✅ Write production-quality code (clean, documented, thoroughly tested)
+- ✅ Explain complex concepts clearly (inline comments + comprehensive documentation)
+- ✅ Balance security with usability (professional UI with focus on user education)
+- ✅ Educate others on security (dedicated showcase pages with interactive learning tools)
 
 ### Roles This Applies To:
-- Frontend Developer (security-conscious coding)
-- Full Stack Developer (understanding of security layers)
-- Security Engineer (practical implementation skills)
-- DevSecOps Engineer (secure by design thinking)
-- Software Engineer (general best practices)
+- Frontend Developer (security-conscious coding practices)
+- Full Stack Developer (understanding of security layers and defense in depth)
+- Security Engineer (practical implementation skills with working demonstrations)
+- DevSecOps Engineer (secure by design thinking with educational approach)
+- Software Architect (multi-layered security design patterns)
+- Security Training/Education Role (interactive demonstrations and explanations)
 
 ---
 
@@ -294,26 +578,56 @@ To make this production-ready, consider adding:
 
 ### On Your Resume:
 ```
-Security Showcase | Frontend Security Engineering
-• Developed DOM-based XSS prevention system with 100% mitigation rate across 
-  6+ attack vectors using input sanitization, safe DOM rendering, and CSP
-• Implemented defense-in-depth strategy aligned with OWASP Top 10 2021 
-  guidelines, demonstrating production-ready security practices
-• Created interactive security demo with comprehensive documentation explaining 
-  threat models and security controls for technical stakeholders
+Security-First Frontend Engineering Portfolio | Full-Stack Security Demonstration
+• Developed comprehensive DOM-based XSS prevention system with 100% mitigation rate 
+  across 12+ attack vectors using multi-layered defense approach (sanitization, safe 
+  rendering, CSP) aligned with OWASP Top 10 2021
+• Created interactive security showcase featuring three critical client-side vulnerabilities 
+  (DOM manipulation, event injection, JS execution) with side-by-side vulnerable/secure 
+  code demonstrations and real-time payload testing
+• Implemented production-ready defense strategies including textContent vs innerHTML 
+  comparison, HTML allowlisting techniques, event handler stripping, and JavaScript 
+  execution prevention via safe parsers
+• Designed education-focused security module with comprehensive threat model documentation, 
+  interactive demonstrations, security checklist, and defense strategy explanations for 
+  learning and training purposes
 ```
 
 ### In Your GitHub README:
 Link to: https://yourusername.github.io/security-showcase/
 
-**Description**: "Security-first frontend engineering portfolio demonstrating real-world DOM-based XSS prevention with OWASP-aligned implementations."
+**Description**: "Security-first frontend engineering portfolio demonstrating DOM-based XSS prevention across multiple attack vectors with interactive educational modules and OWASP-aligned implementations."
 
-**Tags**: `security`, `xss-prevention`, `owasp`, `vanilla-javascript`, `cybersecurity`, `frontend-security`
+**Key Features**:
+- Main XSS Prevention Dashboard with sanitization, safe rendering, and CSP
+- Client-Side Security Showcase with interactive threat demonstrations
+- Chatbot Security Defense with real-time payload testing
+- Comprehensive documentation with interview talking points
+
+**Tags**: `security`, `xss-prevention`, `owasp`, `vanilla-javascript`, `cybersecurity`, `frontend-security`, `security-education`
 
 ### In Cover Letters:
-"I'm particularly passionate about security - I built a comprehensive DOM-based XSS prevention showcase that demonstrates practical application of OWASP Top 10 principles. You can see it at [link], where I implement multi-layered defenses including input sanitization, safe DOM manipulation, and Content Security Policy enforcement."
+"I'm particularly passionate about security - I built a comprehensive portfolio demonstrating DOM-based XSS prevention aligned with OWASP Top 10 principles. The project includes an interactive Client-Side Security Showcase that demonstrates three major frontend vulnerabilities and their defenses through side-by-side code comparisons. You can explore it at [link], where I showcase practical implementation of:
+- textContent vs innerHTML safety
+- Event handler injection prevention
+- JavaScript execution defense
+- Multi-layered security approach
+- CSP implementation and monitoring"
+
+### Interview Discussion Points:
+
+**Opening Statement**:
+"I built a comprehensive security portfolio that demonstrates three things: (1) I understand real-world security threats, (2) I can implement practical defenses that work, and (3) I can explain security concepts clearly to different audiences. The project includes an interactive showcase with 12+ documented attack vectors and their mitigations."
+
+**When Asked About Code Quality**:
+"Security is code quality. Every line is commented with the 'why,' not just the 'how.' The Client-Side Security page specifically demonstrates my ability to build educational content that helps others understand complex security concepts through interactive demonstrations."
+
+**When Asked About Learning from Others**:
+"This project is based on OWASP Top 10 and industry best practices, but I went beyond just following guidelines - I created interactive demonstrations that prove these defenses actually work. The side-by-side code comparisons and real-time payload testing show I understand not just the theory but the practical implementation."
 
 ---
+
+## 📞 **Connecting With Recruiters**
 
 ## ✅ **Project Checklist**
 
@@ -329,20 +643,66 @@ Link to: https://yourusername.github.io/security-showcase/
 - [x] GitHub Pages compatible
 - [x] Resume bullet points prepared
 - [x] Interview talking points documented
+- [x] Client-Side Security Showcase page created
+- [x] DOM manipulation vulnerability demonstration
+- [x] Event handler injection examples
+- [x] Malicious JavaScript execution prevention guide
+- [x] Interactive side-by-side code comparisons
+- [x] Defense strategies documentation
+- [x] Security checklist implementation
+- [x] Navigation menu integration
 
 ---
 
 ## 🎉 **Conclusion**
 
-This project demonstrates that you don't just write code that works - you write code that's **secure by design**. It shows you understand:
+This project demonstrates that you don't just write code that works - you write code that's **secure by design** and **educates others about security**. It shows you understand:
 
-1. **The threat landscape** (what can go wrong)
-2. **Practical mitigations** (how to prevent it)
-3. **Defense in depth** (what to do when one layer fails)
-4. **Professional communication** (how to explain it to others)
+### Core Competencies Demonstrated:
+1. **Threat Analysis** (what can go wrong) - 12+ documented attack vectors
+2. **Practical Implementation** (how to prevent it) - Working, interactive defenses
+3. **Defense in Depth** (what to do when one fails) - Multi-layered protection strategy
+4. **Technical Communication** (how to explain it) - Comprehensive documentation + interactive education
+5. **Production Thinking** (how to scale securely) - Server-side validation, monitoring, incident response
 
-Most importantly, it's a **working demonstration** that recruiters and interviewers can interact with, not just theoretical knowledge. This is exactly the kind of practical security thinking that companies are looking for in 2026.
+### Project Highlights:
+
+**Multiple Security Demonstrations**:
+- ✅ Real-time XSS prevention with multi-layered sanitization
+- ✅ Content Security Policy enforcement at browser level
+- ✅ Interactive client-side vulnerability education module
+- ✅ Comprehensive threat model across 12+ attack patterns
+- ✅ Production-ready code architecture
+
+**Educational Component** (What Sets It Apart):
+- Interactive demonstrations of 3 major client-side threats
+- Side-by-side vulnerable vs. secure code comparisons
+- Real-time payload testing capability
+- Security best practices checklist
+- Tailored content for multiple learning levels
+
+### What Makes This Stand Out:
+
+Most security portfolios show either:
+- **Theory without implementation** (academic knowledge), OR
+- **Code without explanation** (technical but unexplained)
+
+This project combines **both**: Working code, comprehensive documentation, AND interactive educational demonstrations that actually teach security concepts.
+
+### Impact for Different Audiences:
+
+**For Recruiters**:
+"This person understands security comprehensively and can communicate it professionally"
+
+**For Hiring Managers**:
+"This person can write secure code AND educate the team about security best practices"
+
+**For Security Teams**:
+"This person has practical implementation skills backed by solid theoretical understanding"
+
+**For Students/Learners**:
+"This is how security should be taught and implemented in real applications"
 
 ---
 
-**Built with security-first principles | Zero vulnerabilities | Production-ready architecture**
+**Built with security-first principles | Zero vulnerabilities | Production-ready | Educational focus | Multiple threat demonstrations**
